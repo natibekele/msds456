@@ -138,6 +138,7 @@ ui <- dashboardPage(
   )
 )
 
+
 # Define Server
 server <- function(input, output, session) {
   
@@ -148,27 +149,28 @@ server <- function(input, output, session) {
     # Replace this with: read.csv("your_bundesliga_data.csv")
     
     # Sample data structure - replace with actual data loading
-    data.frame(
-      Rk = 1:100,
-      Player = paste("Player", 1:100),
-      Nation = sample(c("GER", "FRA", "ESP", "BRA", "ARG"), 100, replace = TRUE),
-      Pos = sample(c("GK", "DF", "MF", "FW"), 100, replace = TRUE),
-      Squad = sample(c("Bayern Munich", "Borussia Dortmund", "RB Leipzig", "Bayer Leverkusen"), 100, replace = TRUE),
-      Age = sample(18:35, 100, replace = TRUE),
-      MP = sample(1:34, 100, replace = TRUE),
-      Starts = sample(0:34, 100, replace = TRUE),
-      Min90s = round(runif(100, 0, 34), 1),
-      Gls = sample(0:30, 100, replace = TRUE),
-      Ast = sample(0:20, 100, replace = TRUE),
-      xG = round(runif(100, 0, 25), 2),
-      xAG = round(runif(100, 0, 15), 2),
-      CrdY = sample(0:15, 100, replace = TRUE),
-      CrdR = sample(0:3, 100, replace = TRUE),
-      PrgC = sample(0:200, 100, replace = TRUE),
-      PrgP = sample(0:150, 100, replace = TRUE),
-      PrgR = sample(0:100, 100, replace = TRUE),
-      stringsAsFactors = FALSE
-    )
+    read.csv("./player-stats.csv")
+    # data.frame(
+    #   Rk = 1:100,
+    #   Player = paste("Player", 1:100),
+    #   Nation = sample(c("GER", "FRA", "ESP", "BRA", "ARG"), 100, replace = TRUE),
+    #   Pos = sample(c("GK", "DF", "MF", "FW"), 100, replace = TRUE),
+    #   Squad = sample(c("Bayern Munich", "Borussia Dortmund", "RB Leipzig", "Bayer Leverkusen"), 100, replace = TRUE),
+    #   Age = sample(18:35, 100, replace = TRUE),
+    #   MP = sample(1:34, 100, replace = TRUE),
+    #   Starts = sample(0:34, 100, replace = TRUE),
+    #   Min90s = round(runif(100, 0, 34), 1),
+    #   Gls = sample(0:30, 100, replace = TRUE),
+    #   Ast = sample(0:20, 100, replace = TRUE),
+    #   xG = round(runif(100, 0, 25), 2),
+    #   xAG = round(runif(100, 0, 15), 2),
+    #   CrdY = sample(0:15, 100, replace = TRUE),
+    #   CrdR = sample(0:3, 100, replace = TRUE),
+    #   PrgC = sample(0:200, 100, replace = TRUE),
+    #   PrgP = sample(0:150, 100, replace = TRUE),
+    #   PrgR = sample(0:100, 100, replace = TRUE),
+    #   stringsAsFactors = FALSE
+    # )
   })
   
   # Update player choices based on filters
@@ -177,14 +179,14 @@ server <- function(input, output, session) {
     
     # Filter data based on position and squad
     if(input$position_filter != "all") {
-      data <- data[data$Pos == input$position_filter, ]
+      data <- data[data$position == input$position_filter, ]
     }
     
     if(input$squad_filter != "all") {
-      data <- data[data$Squad == input$squad_filter, ]
+      data <- data[data$team == input$squad_filter, ]
     }
     
-    player_choices <- setNames(data$Player, paste(data$Player, "-", data$Squad, "(", data$Pos, ")"))
+    player_choices <- setNames(data$player, paste(data$player, "-", data$team, "(", data$position, ")"))
     
     updateSelectInput(session, "player1", choices = c("Select a player..." = "", player_choices))
     updateSelectInput(session, "player2", choices = c("None" = "", player_choices))
@@ -196,11 +198,11 @@ server <- function(input, output, session) {
     data <- bundesliga_data()
     
     # Update position filter
-    positions <- c("All Positions" = "all", unique(data$Pos))
+    positions <- c("All Positions" = "all", unique(data$position))
     updateSelectInput(session, "position_filter", choices = positions)
     
     # Update squad filter
-    squads <- c("All Squads" = "all", sort(unique(data$Squad)))
+    squads <- c("All Squads" = "all", sort(unique(data$team)))
     updateSelectInput(session, "squad_filter", choices = squads)
   })
   
@@ -216,23 +218,23 @@ server <- function(input, output, session) {
     
     # Get selected metrics
     selected_metrics <- c()
-    if(input$use_goals) selected_metrics <- c(selected_metrics, "Gls")
-    if(input$use_assists) selected_metrics <- c(selected_metrics, "Ast")
-    if(input$use_xg) selected_metrics <- c(selected_metrics, "xG")
-    if(input$use_xag) selected_metrics <- c(selected_metrics, "xAG")
-    if(input$use_min90s) selected_metrics <- c(selected_metrics, "Min90s")
-    if(input$use_starts) selected_metrics <- c(selected_metrics, "Starts")
-    if(input$use_cards) selected_metrics <- c(selected_metrics, "CrdY")
-    if(input$use_prgc) selected_metrics <- c(selected_metrics, "PrgC")
-    if(input$use_prgp) selected_metrics <- c(selected_metrics, "PrgP")
-    if(input$use_prgr) selected_metrics <- c(selected_metrics, "PrgR")
+    if(input$use_goals) selected_metrics <- c(selected_metrics, "goals")
+    if(input$use_assists) selected_metrics <- c(selected_metrics, "assists")
+    if(input$use_xg) selected_metrics <- c(selected_metrics, "xg")
+    if(input$use_xag) selected_metrics <- c(selected_metrics, "xg_assist")
+    if(input$use_min90s) selected_metrics <- c(selected_metrics, "minutes_90s")
+    if(input$use_starts) selected_metrics <- c(selected_metrics, "games_starts")
+    if(input$use_cards) selected_metrics <- c(selected_metrics, "cards_yellow")
+    if(input$use_prgc) selected_metrics <- c(selected_metrics, "progressive_carries")
+    if(input$use_prgp) selected_metrics <- c(selected_metrics, "progressive_passes")
+    if(input$use_prgr) selected_metrics <- c(selected_metrics, "progressive_passes_received")
     
     if(length(selected_metrics) == 0) {
       return(NULL)
     }
     
     # Filter data for selected players
-    player_data <- data[data$Player %in% selected_players, c("Player", selected_metrics)]
+    player_data <- data[data$player %in% selected_players, c("player", selected_metrics)]
     
     # Normalize data to 0-100 scale for spider chart
     normalized_data <- player_data
@@ -253,11 +255,11 @@ server <- function(input, output, session) {
       normalized_data[, selected_metrics]
     )
     
-    rownames(chart_data) <- c("Max", "Min", normalized_data$Player)
+    rownames(chart_data) <- c("Max", "Min", normalized_data$player)
     
     list(
       chart_data = chart_data,
-      player_names = normalized_data$Player,
+      player_names = normalized_data$player,
       metrics = selected_metrics
     )
   }, ignoreNULL = FALSE)
@@ -318,8 +320,8 @@ server <- function(input, output, session) {
     if(input$player2 != "") selected_players <- c(selected_players, input$player2)
     if(input$player3 != "") selected_players <- c(selected_players, input$player3)
     
-    summary_data <- data[data$Player %in% selected_players, 
-                        c("Player", "Squad", "Pos", "Age", "MP", "Gls", "Ast", "xG", "xAG", "Min90s")]
+    summary_data <- data[data$player %in% selected_players, 
+                        c("player", "team", "position", "age", "games", "goals", "assists", "xg", "xg_assist", "minutes_90s")]
     
     DT::datatable(
       summary_data,
@@ -330,7 +332,7 @@ server <- function(input, output, session) {
       ),
       rownames = FALSE
     ) %>%
-      DT::formatRound(columns = c("xG", "xAG", "Min90s"), digits = 2)
+      DT::formatRound(columns = c("xg", "xg_assist", "minutes_90s"), digits = 2)
   })
   
   # Full data table
@@ -347,7 +349,7 @@ server <- function(input, output, session) {
       filter = 'top',
       rownames = FALSE
     ) %>%
-      DT::formatRound(columns = c("xG", "xAG", "Min90s"), digits = 2)
+      DT::formatRound(columns = c("xg", "xg_assist", "minutes_90s"), digits = 2)
   })
 }
 
